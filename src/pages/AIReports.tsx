@@ -37,7 +37,7 @@ const AIReports: React.FC = () => {
       setLoading(true);
       setError('');
       const response = await aiReportService.generateReport({ prompt });
-      setReport(response.report);
+      setReport(response.data.report);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to generate report');
     } finally {

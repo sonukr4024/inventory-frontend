@@ -46,10 +46,11 @@ const Reports: React.FC = () => {
   const handleDailyReport = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getDailySalesReport(dailyDate);
-      setDailyReport(data);
+      const response = await reportService.getDailySalesReport(dailyDate);
+      setDailyReport(response.data || null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load report');
+      setDailyReport(null);
     } finally {
       setLoading(false);
     }
@@ -58,10 +59,11 @@ const Reports: React.FC = () => {
   const handleMonthlyReport = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getMonthlySalesReport(monthlyYear, monthlyMonth);
-      setMonthlyReport(data);
+      const response = await reportService.getMonthlySalesReport(monthlyYear, monthlyMonth);
+      setMonthlyReport(response.data || null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load report');
+      setMonthlyReport(null);
     } finally {
       setLoading(false);
     }
@@ -70,13 +72,14 @@ const Reports: React.FC = () => {
   const handleCustomReport = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getCustomSalesReport(
+      const response = await reportService.getCustomSalesReport(
         `${customStartDate}T00:00:00`,
         `${customEndDate}T23:59:59`
       );
-      setCustomReport(data);
+      setCustomReport(response.data || null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load report');
+      setCustomReport(null);
     } finally {
       setLoading(false);
     }
@@ -85,10 +88,11 @@ const Reports: React.FC = () => {
   const handleOutstandingReport = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getOutstandingReport();
-      setOutstandingReport(data);
+      const response = await reportService.getOutstandingReport();
+      setOutstandingReport(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load report');
+      setOutstandingReport([]);
     } finally {
       setLoading(false);
     }
@@ -97,10 +101,11 @@ const Reports: React.FC = () => {
   const handleLowStockReport = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getLowStockReport();
-      setLowStockReport(data);
+      const response = await reportService.getLowStockReport();
+      setLowStockReport(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load report');
+      setLowStockReport([]);
     } finally {
       setLoading(false);
     }
@@ -148,7 +153,7 @@ const Reports: React.FC = () => {
                 Net Sales
               </Typography>
               <Typography variant="h6" color="success.main">
-                ₹{data.netSales?.toFixed(2)}
+                ₹{(data.netSales || data.totalSales || 0).toFixed(2)}
               </Typography>
             </CardContent>
           </Card>
@@ -160,16 +165,19 @@ const Reports: React.FC = () => {
   const renderPaymentModeChart = (data: any) => {
     if (!data) return null;
 
+    // Handle both old and new API structures
+    const paymentData = data.paymentModeSummary || {};
+
     const chartData = {
       labels: ['Cash', 'Card', 'UPI', 'Credit'],
       datasets: [
         {
           label: 'Sales by Payment Mode',
           data: [
-            data.cashSales || 0,
-            data.cardSales || 0,
-            data.upiSales || 0,
-            data.creditSales || 0
+            paymentData.CASH || data.cashSales || 0,
+            paymentData.CARD || data.cardSales || 0,
+            paymentData.UPI || data.upiSales || 0,
+            paymentData.CREDIT || data.creditSales || 0
           ],
           backgroundColor: ['#4caf50', '#2196f3', '#ff9800', '#f44336']
         }
@@ -396,12 +404,12 @@ const Reports: React.FC = () => {
                       <TableCell align="right">₹{customer.creditLimit?.toFixed(2)}</TableCell>
                       <TableCell align="right">
                         <Typography color="error">
-                          ₹{customer.currentOutstanding?.toFixed(2)}
+                          ₹{customer.totalOutstanding?.toFixed(2)}
                         </Typography>
                       </TableCell>
                       <TableCell>
-                        {customer.lastBillDate
-                          ? new Date(customer.lastBillDate).toLocaleDateString()
+                        {customer.lastBillDate || customer.oldestDueDate
+                          ? new Date(customer.lastBillDate || customer.oldestDueDate).toLocaleDateString()
                           : '-'}
                       </TableCell>
                     </TableRow>

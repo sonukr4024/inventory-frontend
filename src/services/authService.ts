@@ -1,9 +1,9 @@
 import axiosInstance from '../utils/axiosConfig';
-import { LoginRequest, RegisterRequest, AuthResponse } from '../types';
+import { LoginRequest, RegisterRequest, AuthResponse, ApiResponse, LoginResponseData } from '../types';
 
 export const authService = {
-  login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    const response = await axiosInstance.post<AuthResponse>('/api/auth/login', credentials);
+  login: async (credentials: LoginRequest): Promise<ApiResponse<LoginResponseData>> => {
+    const response = await axiosInstance.post<ApiResponse<LoginResponseData>>('/api/auth/login', credentials);
     return response.data;
   },
 

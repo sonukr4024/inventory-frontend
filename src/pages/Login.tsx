@@ -31,7 +31,17 @@ const Login: React.FC = () => {
 
     try {
       const response = await authService.login({ username, password });
-      login(response.token, response.user);
+      const loginData = response.data;
+
+      const user = {
+        id: loginData.userId,
+        username: loginData.username,
+        fullName: loginData.username,
+        email: loginData.email,
+        role: loginData.role
+      };
+debugger
+      login(loginData.token, user);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Invalid username or password');

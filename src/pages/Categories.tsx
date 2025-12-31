@@ -43,10 +43,11 @@ const Categories: React.FC = () => {
   const loadCategories = async () => {
     try {
       setLoading(true);
-      const data = await categoryService.getAllCategories();
-      setCategories(data);
+      const response = await categoryService.getAllCategories();
+      setCategories(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load categories');
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -143,8 +144,8 @@ const Categories: React.FC = () => {
                 <TableCell>{category.description || '-'}</TableCell>
                 <TableCell>
                   <Chip
-                    label={category.isActive ? 'Active' : 'Inactive'}
-                    color={category.isActive ? 'success' : 'default'}
+                    label={(category.isActive !== false) ? 'Active' : 'Inactive'}
+                    color={(category.isActive !== false) ? 'success' : 'default'}
                     size="small"
                   />
                 </TableCell>

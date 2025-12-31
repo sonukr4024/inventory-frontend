@@ -1,9 +1,20 @@
+// Enums matching backend
+export type Role = 'ROLE_ADMIN' | 'ROLE_STAFF';
+export type PaymentMode = 'CASH' | 'CARD' | 'UPI' | 'CREDIT';
+export type PaymentStatus = 'PAID' | 'PARTIAL' | 'UNPAID';
+export type Unit = 'KG' | 'GRAM' | 'LITRE' | 'ML' | 'PIECE' | 'DOZEN' | 'BOX' | 'CARTON';
+
+// User & Authentication Types
 export interface User {
   id: number;
   username: string;
   fullName: string;
   email: string;
-  role: 'ROLE_ADMIN' | 'ROLE_STAFF';
+  phoneNumber?: string;
+  role: Role;
+  isLocked?: boolean;
+  failedLoginAttempts?: number;
+  isInvited?: boolean;
 }
 
 export interface LoginRequest {
@@ -16,14 +27,29 @@ export interface RegisterRequest {
   password: string;
   fullName: string;
   email: string;
-  role: 'ROLE_ADMIN' | 'ROLE_STAFF';
+  role: Role;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
 }
 
 export interface AuthResponse {
   token: string;
-  user: User;
+  type: string;
+  userId: number;
+  username: string;
+  email: string;
+  role: Role;
 }
 
+// Deprecated: Use AuthResponse instead
+export interface LoginResponseData extends AuthResponse {}
+
+// Customer Types
 export interface Customer {
   id: number;
   customerName: string;
@@ -32,9 +58,9 @@ export interface Customer {
   address?: string;
   gstin?: string;
   creditLimit: number;
-  currentOutstanding: number;
-  faceImagePath?: string;
-  isActive: boolean;
+  outstandingBalance: number;
+  faceImageCount?: number;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,11 +74,35 @@ export interface CreateCustomerRequest {
   creditLimit: number;
 }
 
+export interface OutstandingCustomer {
+  customerId: number;
+  customerName: string;
+  phoneNumber: string;
+  email?: string;
+  creditLimit: number;
+  totalOutstanding: number;
+  currentOutstanding?: number; // Alias for backward compatibility
+  oldestDueDate?: string;
+  lastBillDate?: string;
+  outstandingBills?: OutstandingBill[];
+}
+
+export interface OutstandingBill {
+  billId: number;
+  billNumber: string;
+  billDate: string;
+  totalAmount: number;
+  paidAmount: number;
+  balanceAmount: number;
+  daysOverdue: number;
+}
+
+// Category Types
 export interface Category {
   id: number;
   categoryName: string;
   description?: string;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 export interface CreateCategoryRequest {
@@ -67,14 +117,15 @@ export interface Product {
   description?: string;
   categoryId: number;
   categoryName?: string;
-  unit: string;
+  unit: Unit | string;
   baseRate: number;
   currentRate: number;
   stockQuantity: number;
   lowStockThreshold: number;
   hsnCode?: string;
   gstPercentage: number;
-  isActive: boolean;
+  lowStock?: boolean;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,6 +152,16 @@ export interface RateOverrideRequest {
   remarks?: string;
 }
 
+export interface LowStockProduct {
+  id: number;
+  productCode: string;
+  productName: string;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  unit: string;
+}
+
+// Bill Types
 export interface BillItem {
   productId: number;
   quantity: number;
@@ -114,7 +175,7 @@ export interface CreateBillRequest {
   items: BillItem[];
   discountAmount: number;
   paidAmount: number;
-  paymentMode: 'CASH' | 'CARD' | 'UPI' | 'CREDIT';
+  paymentMode: PaymentMode;
   remarks?: string;
 }
 
@@ -124,14 +185,17 @@ export interface Bill {
   customerId: number;
   customerName: string;
   billDate: string;
-  totalAmount: number;
+  subTotal: number;
   taxAmount: number;
   discountAmount: number;
-  netAmount: number;
+  totalAmount: number;
   paidAmount: number;
   balanceAmount: number;
+  paymentStatus: PaymentStatus;
   paymentMode: string;
   remarks?: string;
+  createdBy?: string;
+  createdAt?: string;
   items: BillItemDetail[];
 }
 
@@ -139,16 +203,18 @@ export interface BillItemDetail {
   id: number;
   productId: number;
   productName: string;
+  productCode?: string;
   quantity: number;
+  unit?: string;
   rate: number;
-  amount: number;
   taxPercentage: number;
   taxAmount: number;
   discountPercentage: number;
   discountAmount: number;
-  netAmount: number;
+  lineTotal: number;
 }
 
+// Payment Types
 export interface PaymentRequest {
   customerId: number;
   amount: number;
@@ -156,26 +222,52 @@ export interface PaymentRequest {
   remarks?: string;
 }
 
-export interface OutstandingCustomer {
-  customerId: number;
-  customerName: string;
-  phoneNumber: string;
-  creditLimit: number;
-  currentOutstanding: number;
-  lastBillDate?: string;
-}
-
+// Report Types
 export interface DailySalesReport {
-  date: string;
+  title?: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
   totalBills: number;
   totalSales: number;
   totalTax: number;
   totalDiscount: number;
-  netSales: number;
-  cashSales: number;
-  cardSales: number;
-  upiSales: number;
-  creditSales: number;
+  totalPaid?: number;
+  totalOutstanding?: number;
+  netSales?: number; // Calculated field
+  cashSales?: number;
+  cardSales?: number;
+  upiSales?: number;
+  creditSales?: number;
+  paymentModeSummary?: {
+    CASH?: number;
+    CARD?: number;
+    UPI?: number;
+    CREDIT?: number;
+  };
+  paymentStatusSummary?: {
+    PAID?: number;
+    PARTIAL?: number;
+    UNPAID?: number;
+  };
+  productWiseSales?: ProductWiseSale[];
+  categoryWiseSales?: CategoryWiseSale[];
+}
+
+export interface ProductWiseSale {
+  productId: number;
+  productCode: string;
+  productName: string;
+  unit: string;
+  quantitySold: number;
+  totalRevenue: number;
+}
+
+export interface CategoryWiseSale {
+  categoryId: number;
+  categoryName: string;
+  totalRevenue: number;
+  itemCount: number;
 }
 
 export interface MonthlySalesReport {
@@ -201,15 +293,6 @@ export interface ProductSalesReport {
   averageRate: number;
 }
 
-export interface LowStockProduct {
-  id: number;
-  productCode: string;
-  productName: string;
-  stockQuantity: number;
-  lowStockThreshold: number;
-  unit: string;
-}
-
 export interface InventoryValuation {
   totalProducts: number;
   totalStockValue: number;
@@ -223,6 +306,7 @@ export interface CategoryValuation {
   totalStockValue: number;
 }
 
+// AI Report Types
 export interface AIReportRequest {
   prompt: string;
 }
@@ -232,6 +316,7 @@ export interface AIReportResponse {
   generatedAt: string;
 }
 
+// Dashboard Types
 export interface DashboardStats {
   todaySales: number;
   pendingDues: number;

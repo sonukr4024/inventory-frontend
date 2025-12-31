@@ -44,10 +44,11 @@ const Credit: React.FC = () => {
   const loadOutstanding = async () => {
     try {
       setLoading(true);
-      const data = await creditService.getAllOutstanding();
-      setCustomers(data.filter(c => c.currentOutstanding > 0));
+      const response = await creditService.getAllOutstanding();
+      setCustomers((response.data || []).filter(c => c.totalOutstanding > 0));
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load outstanding data');
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ const Credit: React.FC = () => {
   const handleOpenPaymentDialog = (customer: OutstandingCustomer) => {
     setSelectedCustomer(customer);
     setPaymentData({
-      amount: customer.currentOutstanding,
+      amount: customer.totalOutstanding,
       referenceNumber: '',
       remarks: ''
     });
@@ -81,7 +82,7 @@ const Credit: React.FC = () => {
     }
   };
 
-  const totalOutstanding = customers.reduce((sum, c) => sum + c.currentOutstanding, 0);
+  const totalOutstanding = customers.reduce((sum, c) => sum + c.totalOutstanding, 0);
 
   if (loading) {
     return (
@@ -132,9 +133,9 @@ const Credit: React.FC = () => {
           </TableHead>
           <TableBody>
             {customers.map((customer) => {
-              const utilizationPercent = (customer.currentOutstanding / customer.creditLimit) * 100;
-              const isOverLimit = customer.currentOutstanding > customer.creditLimit;
-              
+              const utilizationPercent = (customer.totalOutstanding / customer.creditLimit) * 100;
+              const isOverLimit = customer.totalOutstanding > customer.creditLimit;
+
               return (
                 <TableRow key={customer.customerId}>
                   <TableCell>{customer.customerName}</TableCell>
@@ -142,7 +143,7 @@ const Credit: React.FC = () => {
                   <TableCell align="right">₹{customer.creditLimit.toFixed(2)}</TableCell>
                   <TableCell align="right">
                     <Typography color={isOverLimit ? 'error' : 'text.primary'} fontWeight={isOverLimit ? 'bold' : 'normal'}>
-                      ₹{customer.currentOutstanding.toFixed(2)}
+                      ₹{customer.totalOutstanding.toFixed(2)}
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -200,7 +201,7 @@ const Credit: React.FC = () => {
                 Customer: {selectedCustomer.customerName}
               </Typography>
               <Typography variant="body2" color="error" gutterBottom mb={2}>
-                Outstanding: ₹{selectedCustomer.currentOutstanding.toFixed(2)}
+                Outstanding: ₹{selectedCustomer.totalOutstanding.toFixed(2)}
               </Typography>
               <TextField
                 fullWidth

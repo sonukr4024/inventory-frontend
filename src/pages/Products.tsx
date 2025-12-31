@@ -70,14 +70,16 @@ const Products: React.FC = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [productsData, categoriesData] = await Promise.all([
+      const [productsResponse, categoriesResponse] = await Promise.all([
         productService.getAllProducts(),
         categoryService.getAllCategories()
       ]);
-      setProducts(productsData);
-      setCategories(categoriesData);
+      setProducts(productsResponse.data || []);
+      setCategories(categoriesResponse.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load data');
+      setProducts([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -91,10 +93,11 @@ const Products: React.FC = () => {
 
     try {
       setLoading(true);
-      const data = await productService.searchProducts(searchTerm);
-      setProducts(data);
+      const response = await productService.searchProducts(searchTerm);
+      setProducts(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Search failed');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -281,8 +284,8 @@ const Products: React.FC = () => {
                 <TableCell>{product.gstPercentage}%</TableCell>
                 <TableCell>
                   <Chip
-                    label={product.isActive ? 'Active' : 'Inactive'}
-                    color={product.isActive ? 'success' : 'default'}
+                    label={(product.isActive !== false) ? 'Active' : 'Inactive'}
+                    color={(product.isActive !== false) ? 'success' : 'default'}
                     size="small"
                   />
                 </TableCell>

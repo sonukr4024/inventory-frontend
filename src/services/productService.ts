@@ -1,49 +1,51 @@
 import axiosInstance from '../utils/axiosConfig';
-import { Product, CreateProductRequest, RateOverrideRequest, LowStockProduct } from '../types';
+import { Product, CreateProductRequest, RateOverrideRequest, LowStockProduct, ApiResponse } from '../types';
 
 export const productService = {
-  createProduct: async (data: CreateProductRequest): Promise<Product> => {
-    const response = await axiosInstance.post<Product>('/api/products', data);
+  createProduct: async (data: CreateProductRequest): Promise<ApiResponse<Product>> => {
+    const response = await axiosInstance.post<ApiResponse<Product>>('/api/products', data);
     return response.data;
   },
 
-  getAllProducts: async (): Promise<Product[]> => {
-    const response = await axiosInstance.get<Product[]>('/api/products');
+  getAllProducts: async (): Promise<ApiResponse<Product[]>> => {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>('/api/products');
     return response.data;
   },
 
-  getProductById: async (id: number): Promise<Product> => {
-    const response = await axiosInstance.get<Product>(`/api/products/${id}`);
+  getProductById: async (id: number): Promise<ApiResponse<Product>> => {
+    const response = await axiosInstance.get<ApiResponse<Product>>(`/api/products/${id}`);
     return response.data;
   },
 
-  updateProduct: async (id: number, data: CreateProductRequest): Promise<Product> => {
-    const response = await axiosInstance.put<Product>(`/api/products/${id}`, data);
+  updateProduct: async (id: number, data: CreateProductRequest): Promise<ApiResponse<Product>> => {
+    const response = await axiosInstance.put<ApiResponse<Product>>(`/api/products/${id}`, data);
     return response.data;
   },
 
-  deleteProduct: async (id: number): Promise<void> => {
-    await axiosInstance.delete(`/api/products/${id}`);
+  deleteProduct: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await axiosInstance.delete<ApiResponse<void>>(`/api/products/${id}`);
+    return response.data;
   },
 
-  searchProducts: async (name: string): Promise<Product[]> => {
-    const response = await axiosInstance.get<Product[]>('/api/products/search', {
+  searchProducts: async (name: string): Promise<ApiResponse<Product[]>> => {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>('/api/products/search', {
       params: { name }
     });
     return response.data;
   },
 
-  getProductsByCategory: async (categoryId: number): Promise<Product[]> => {
-    const response = await axiosInstance.get<Product[]>(`/api/products/category/${categoryId}`);
+  getProductsByCategory: async (categoryId: number): Promise<ApiResponse<Product[]>> => {
+    const response = await axiosInstance.get<ApiResponse<Product[]>>(`/api/products/category/${categoryId}`);
     return response.data;
   },
 
-  overrideRate: async (id: number, data: RateOverrideRequest): Promise<void> => {
-    await axiosInstance.post(`/api/products/${id}/rate-override`, data);
+  overrideRate: async (id: number, data: RateOverrideRequest): Promise<ApiResponse<void>> => {
+    const response = await axiosInstance.post<ApiResponse<void>>(`/api/products/${id}/rate-override`, data);
+    return response.data;
   },
 
-  getLowStockProducts: async (): Promise<LowStockProduct[]> => {
-    const response = await axiosInstance.get<LowStockProduct[]>('/api/products/low-stock');
+  getLowStockProducts: async (): Promise<ApiResponse<LowStockProduct[]>> => {
+    const response = await axiosInstance.get<ApiResponse<LowStockProduct[]>>('/api/products/low-stock');
     return response.data;
   }
 };

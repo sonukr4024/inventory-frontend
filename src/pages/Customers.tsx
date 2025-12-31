@@ -62,10 +62,11 @@ const Customers: React.FC = () => {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const data = await customerService.getAllCustomers();
-      setCustomers(data);
+      const response = await customerService.getAllCustomers();
+      setCustomers(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load customers');
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
@@ -79,10 +80,11 @@ const Customers: React.FC = () => {
 
     try {
       setLoading(true);
-      const data = await customerService.searchCustomers(searchTerm);
-      setCustomers(data);
+      const response = await customerService.searchCustomers(searchTerm);
+      setCustomers(response.data || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Search failed');
+      setCustomers([]);
     } finally {
       setLoading(false);
     }
@@ -163,8 +165,8 @@ const Customers: React.FC = () => {
 
   const handleRecognizeFace = async (file: File) => {
     try {
-      const customer = await customerService.recognizeFace(file);
-      alert(`Customer recognized: ${customer.customerName}`);
+      const response = await customerService.recognizeFace(file);
+      alert(`Customer recognized: ${response.data.customerName}`);
       setRecognizeDialogOpen(false);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Face recognition failed');
@@ -249,11 +251,11 @@ const Customers: React.FC = () => {
                 <TableCell>{customer.phoneNumber}</TableCell>
                 <TableCell>{customer.email || '-'}</TableCell>
                 <TableCell>₹{customer.creditLimit.toFixed(2)}</TableCell>
-                <TableCell>₹{customer.currentOutstanding.toFixed(2)}</TableCell>
+                <TableCell>₹{customer.outstandingBalance.toFixed(2)}</TableCell>
                 <TableCell>
                   <Chip
-                    label={customer.isActive ? 'Active' : 'Inactive'}
-                    color={customer.isActive ? 'success' : 'default'}
+                    label={(customer.isActive !== false) ? 'Active' : 'Inactive'}
+                    color={(customer.isActive !== false) ? 'success' : 'default'}
                     size="small"
                   />
                 </TableCell>

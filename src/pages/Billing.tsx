@@ -66,14 +66,16 @@ const Billing: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const [customersData, productsData] = await Promise.all([
+      const [customersResponse, productsResponse] = await Promise.all([
         customerService.getAllCustomers(),
         productService.getAllProducts()
       ]);
-      setCustomers(customersData);
-      setProducts(productsData.filter(p => p.isActive));
+      setCustomers(customersResponse.data || []);
+      setProducts((productsResponse.data || []).filter(p => p.isActive !== false));
     } catch (err: any) {
       setError('Failed to load data');
+      setCustomers([]);
+      setProducts([]);
     }
   };
 
@@ -149,8 +151,8 @@ const Billing: React.FC = () => {
         remarks
       };
 
-      const bill = await billService.createBill(billData);
-      setCompletedBill(bill);
+      const response = await billService.createBill(billData);
+      setCompletedBill(response.data);
       setBillSummaryOpen(true);
       setSuccess('Bill created successfully');
       
@@ -205,10 +207,10 @@ const Billing: React.FC = () => {
               {selectedCustomer && (
                 <Box mt={2}>
                   <Typography variant="body2">
-                    Credit Limit: ₹{selectedCustomer.creditLimit.toFixed(2)}
+                    Credit Limit: ₹{selectedCustomer.creditLimit?.toFixed(2)}
                   </Typography>
-                  <Typography variant="body2" color={selectedCustomer.currentOutstanding > 0 ? 'error' : 'text.secondary'}>
-                    Outstanding: ₹{selectedCustomer.currentOutstanding.toFixed(2)}
+                  <Typography variant="body2" color={selectedCustomer.outstandingBalance > 0 ? 'error' : 'text.secondary'}>
+                    Outstanding: ₹{selectedCustomer.outstandingBalance?.toFixed(2)}
                   </Typography>
                 </Box>
               )}
@@ -281,12 +283,12 @@ const Billing: React.FC = () => {
                     {billItems.map((item, index) => (
                       <TableRow key={index}>
                         <TableCell>{item.productName}</TableCell>
-                        <TableCell align="right">{item.quantity.toFixed(2)}</TableCell>
-                        <TableCell align="right">₹{item.rate.toFixed(2)}</TableCell>
-                        <TableCell align="right">₹{item.amount.toFixed(2)}</TableCell>
+                        <TableCell align="right">{item.quantity?.toFixed(2)}</TableCell>
+                        <TableCell align="right">₹{item.rate?.toFixed(2)}</TableCell>
+                        <TableCell align="right">₹{item.amount?.toFixed(2)}</TableCell>
                         <TableCell align="right">{item.discountPercentage}%</TableCell>
-                        <TableCell align="right">₹{item.taxAmount.toFixed(2)}</TableCell>
-                        <TableCell align="right">₹{item.netAmount.toFixed(2)}</TableCell>
+                        <TableCell align="right">₹{item.taxAmount?.toFixed(2)}</TableCell>
+                        <TableCell align="right">₹{item.netAmount?.toFixed(2)}</TableCell>
                         <TableCell>
                           <IconButton
                             size="small"
@@ -314,7 +316,7 @@ const Billing: React.FC = () => {
               <Box mb={2}>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography>Total Amount:</Typography>
-                  <Typography>₹{totals.totalAmount.toFixed(2)}</Typography>
+                  <Typography>₹{totals.totalAmount?.toFixed(2)}</Typography>
                 </Box>
                 <Box display="flex" justifyContent="space-between" mb={1}>
                   <Typography>Item Discount:</Typography>
@@ -337,7 +339,7 @@ const Billing: React.FC = () => {
                 <Divider sx={{ my: 2 }} />
                 <Box display="flex" justifyContent="space-between" mb={2}>
                   <Typography variant="h6">Net Amount:</Typography>
-                  <Typography variant="h6">₹{totals.netAmount.toFixed(2)}</Typography>
+                  <Typography variant="h6">₹{totals.netAmount?.toFixed(2)}</Typography>
                 </Box>
                 <TextField
                   fullWidth
@@ -366,7 +368,7 @@ const Billing: React.FC = () => {
                     Balance:
                   </Typography>
                   <Typography color={totals.balanceAmount > 0 ? 'error' : 'success'} fontWeight="bold">
-                    ₹{totals.balanceAmount.toFixed(2)}
+                    ₹{totals.balanceAmount?.toFixed(2)}
                   </Typography>
                 </Box>
                 <TextField
@@ -420,18 +422,18 @@ const Billing: React.FC = () => {
               </Box>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>Net Amount:</Typography>
-                <Typography>₹{completedBill.netAmount.toFixed(2)}</Typography>
+                <Typography>₹{completedBill.totalAmount?.toFixed(2)}</Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography>Paid:</Typography>
-                <Typography>₹{completedBill.paidAmount.toFixed(2)}</Typography>
+                <Typography>₹{completedBill.paidAmount?.toFixed(2)}</Typography>
               </Box>
               <Box display="flex" justifyContent="space-between" mb={1}>
                 <Typography color={completedBill.balanceAmount > 0 ? 'error' : 'success'}>
                   Balance:
                 </Typography>
                 <Typography color={completedBill.balanceAmount > 0 ? 'error' : 'success'}>
-                  ₹{completedBill.balanceAmount.toFixed(2)}
+                  ₹{completedBill.balanceAmount?.toFixed(2)}
                 </Typography>
               </Box>
             </Box>
