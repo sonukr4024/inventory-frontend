@@ -1,0 +1,256 @@
+export interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  role: 'ROLE_ADMIN' | 'ROLE_STAFF';
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  fullName: string;
+  email: string;
+  role: 'ROLE_ADMIN' | 'ROLE_STAFF';
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  timestamp: string;
+}
+
+export interface LoginResponseData {
+  token: string;
+  type: string;
+  userId: number;
+  username: string;
+  email: string;
+  role: 'ROLE_ADMIN' | 'ROLE_STAFF';
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface Customer {
+  id: number;
+  customerName: string;
+  phoneNumber: string;
+  email?: string;
+  address?: string;
+  gstin?: string;
+  creditLimit: number;
+  currentOutstanding: number;
+  faceImagePath?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCustomerRequest {
+  customerName: string;
+  phoneNumber: string;
+  email?: string;
+  address?: string;
+  gstin?: string;
+  creditLimit: number;
+}
+
+export interface Category {
+  id: number;
+  categoryName: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface CreateCategoryRequest {
+  categoryName: string;
+  description?: string;
+}
+
+export interface Product {
+  id: number;
+  productCode: string;
+  productName: string;
+  description?: string;
+  categoryId: number;
+  categoryName?: string;
+  unit: string;
+  baseRate: number;
+  currentRate: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  hsnCode?: string;
+  gstPercentage: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductRequest {
+  productCode: string;
+  productName: string;
+  description?: string;
+  categoryId: number;
+  unit: string;
+  baseRate: number;
+  currentRate: number;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  hsnCode?: string;
+  gstPercentage: number;
+}
+
+export interface RateOverrideRequest {
+  productId: number;
+  rate: number;
+  effectiveDate: string;
+  endDate?: string;
+  remarks?: string;
+}
+
+export interface BillItem {
+  productId: number;
+  quantity: number;
+  rate: number;
+  taxPercentage: number;
+  discountPercentage: number;
+}
+
+export interface CreateBillRequest {
+  customerId: number;
+  items: BillItem[];
+  discountAmount: number;
+  paidAmount: number;
+  paymentMode: 'CASH' | 'CARD' | 'UPI' | 'CREDIT';
+  remarks?: string;
+}
+
+export interface Bill {
+  id: number;
+  billNumber: string;
+  customerId: number;
+  customerName: string;
+  billDate: string;
+  totalAmount: number;
+  taxAmount: number;
+  discountAmount: number;
+  netAmount: number;
+  paidAmount: number;
+  balanceAmount: number;
+  paymentMode: string;
+  remarks?: string;
+  items: BillItemDetail[];
+}
+
+export interface BillItemDetail {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+  taxPercentage: number;
+  taxAmount: number;
+  discountPercentage: number;
+  discountAmount: number;
+  netAmount: number;
+}
+
+export interface PaymentRequest {
+  customerId: number;
+  amount: number;
+  referenceNumber?: string;
+  remarks?: string;
+}
+
+export interface OutstandingCustomer {
+  customerId: number;
+  customerName: string;
+  phoneNumber: string;
+  creditLimit: number;
+  currentOutstanding: number;
+  lastBillDate?: string;
+}
+
+export interface DailySalesReport {
+  date: string;
+  totalBills: number;
+  totalSales: number;
+  totalTax: number;
+  totalDiscount: number;
+  netSales: number;
+  cashSales: number;
+  cardSales: number;
+  upiSales: number;
+  creditSales: number;
+}
+
+export interface MonthlySalesReport {
+  year: number;
+  month: number;
+  totalBills: number;
+  totalSales: number;
+  totalTax: number;
+  totalDiscount: number;
+  netSales: number;
+  cashSales: number;
+  cardSales: number;
+  upiSales: number;
+  creditSales: number;
+  dailyBreakdown: DailySalesReport[];
+}
+
+export interface ProductSalesReport {
+  productId: number;
+  productName: string;
+  totalQuantity: number;
+  totalSales: number;
+  averageRate: number;
+}
+
+export interface LowStockProduct {
+  id: number;
+  productCode: string;
+  productName: string;
+  stockQuantity: number;
+  lowStockThreshold: number;
+  unit: string;
+}
+
+export interface InventoryValuation {
+  totalProducts: number;
+  totalStockValue: number;
+  categoryWiseValuation: CategoryValuation[];
+}
+
+export interface CategoryValuation {
+  categoryId: number;
+  categoryName: string;
+  totalProducts: number;
+  totalStockValue: number;
+}
+
+export interface AIReportRequest {
+  prompt: string;
+}
+
+export interface AIReportResponse {
+  report: string;
+  generatedAt: string;
+}
+
+export interface DashboardStats {
+  todaySales: number;
+  pendingDues: number;
+  lowStockCount: number;
+  todayBills: number;
+}
